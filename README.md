@@ -7,7 +7,7 @@ A library for executing Clinical Quality Language (CQL) expressions asynchronous
 All CQL calculations are executed using the [CQL Execution Engine](https://github.com/cqframework/cql-execution), an open source library that implements the CQL standard.
 
 ### FHIRHelpers
-[FHIRHelpers](https://github.com/cqframework/clinical_quality_language/wiki/FHIRHelpers) is a library that defines functions for converting between FHIR and CQL data types. `cql-worker` includes version `4.0.1` of FHIRHelpers, which is available under an Apache 2.0 License, Copyright 2014 The MITRE Corporation. Other versions of FHIRHelpers can be found [here](https://github.com/cqframework/clinical_quality_language/tree/master/Src/java/quick/src/main/resources/org/hl7/fhir).
+[FHIRHelpers](https://github.com/cqframework/clinical_quality_language/wiki/FHIRHelpers) is a library that defines functions for converting between FHIR and CQL data types. `cql-worker` includes version `4.1.000` of FHIRHelpers, which is available under an Apache 2.0 License, Copyright 2014 The MITRE Corporation. Other versions of FHIRHelpers can be found [here](https://github.com/cqframework/clinical_quality_language/tree/master/Src/java/quick/src/main/resources/org/hl7/fhir).
 
 ### CQL Execution FHIR Data Source
 The [`cql-exec-fhir`](https://github.com/cqframework/cql-exec-fhir) is used to provide a FHIR-based data source for use with the CQL Execution Engine.
