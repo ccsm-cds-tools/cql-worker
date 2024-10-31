@@ -1,6 +1,8 @@
 
 import CqlProcessor from './CqlProcessor.js';
+import { MessageListener } from './messageListener.js'
 var processor = {};
+var messageListener = undefined;
 
 /**
  * Define an event handler for when a message is sent to this web worker.
@@ -37,8 +39,9 @@ onmessage = async function(rx) {
         expression: expression,
         result: result
       };
-      if(processor.messageListener){
-        tx.messages = processor.messageListener.messages;
+      if(messageListener){
+        tx.messages = messageListener.messages;
+        messageListener.messages = [];
       }
     } else {
       // If we don't have a bundle just send the expression back.
@@ -56,7 +59,8 @@ onmessage = async function(rx) {
     // CQL Processor object.
     parameters = rx.data.parameters;
     elmJsonDependencies = rx.data.elmJsonDependencies;
-    processor = new CqlProcessor(elmJson, valueSetJson, parameters, elmJsonDependencies);
+    messageListener = new MessageListener();
+    processor = new CqlProcessor(elmJson, valueSetJson, parameters, elmJsonDependencies, messageListener);
   }
 }
 

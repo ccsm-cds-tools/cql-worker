@@ -1,6 +1,8 @@
 import { parentPort } from "worker_threads";
 import CqlProcessor from "./CqlProcessor.js";
+import { MessageListener } from './messageListener.js'
 var processor = {};
+var messageListener = undefined;
 
 /**
  * TODO: Update this comment for node worker thread.
@@ -36,8 +38,9 @@ parentPort.onmessage = async function (rx) {
         expression: expression,
         result: result,
       };
-      if(processor.messageListener){
-        tx.messages = processor.messageListener.messages;
+      if(messageListener){
+        tx.messages = messageListener.messages;
+        messageListener.messages = [];
       }      
     } else {
       // If we don't have a bundle just send the expression back.
@@ -59,11 +62,13 @@ parentPort.onmessage = async function (rx) {
     // CQL Processor object.
     parameters = rx.data.parameters;
     elmJsonDependencies = rx.data.elmJsonDependencies;
+    messageListener = new MessageListener();
     processor = new CqlProcessor(
       elmJson,
       valueSetJson,
       parameters,
-      elmJsonDependencies
+      elmJsonDependencies,
+      messageListener
     );
   }
 };

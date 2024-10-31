@@ -1,7 +1,6 @@
 import cql from "cql-execution";
 import fhir from "cql-exec-fhir";
 import fhirHelpersJson from "./FHIRHelpers-4.0.1.json.js";
-import { MessageListener } from './messageListener.js'
 
 /**
  * Executes logical expression written in the Clinical Quality Language (CQL) against
@@ -19,7 +18,8 @@ export default class CqlProcessor {
     elmJson,
     valueSetJson,
     parameters = null,
-    elmJsonDependencies = {}
+    elmJsonDependencies = {},
+    messageListener = undefined
   ) {
     this.patientSource = fhir.PatientSource.FHIRv401();
     this.repository = new cql.Repository({
@@ -28,7 +28,7 @@ export default class CqlProcessor {
     });
     this.library = new cql.Library(elmJson, this.repository);
     this.codeService = new cql.CodeService(valueSetJson);
-    this.messageListener = new MessageListener();
+    this.messageListener = messageListener;
     this.executor = new cql.Executor(
       this.library,
       this.codeService,
@@ -60,11 +60,9 @@ export default class CqlProcessor {
     if (this.patientSource._bundles && this.patientSource._bundles.length > 0) {
       let results;
       if (expr == "__evaluate_library__") {
-        this.messageListener.messages = [];
         results = await this.executor.exec(this.patientSource);
         return results.patientResults[this.patientID];
-      } else {
-        this.messageListener.messages = [];
+      } else {        
         results = await this.executor.exec_expression(
           expr,
           this.patientSource
