@@ -36,6 +36,9 @@ parentPort.onmessage = async function (rx) {
         expression: expression,
         result: result,
       };
+      if(processor.messageListener){
+        tx.messages = processor.messageListener.messages;
+      }      
     } else {
       // If we don't have a bundle just send the expression back.
       tx = {

@@ -22,6 +22,7 @@ export function initializeCqlWorker(cqlWorker, isNodeJs=false) {
     // Unpack the message from the incoming event.
     let expression = isNodeJs ? event.expression : event.data.expression;
     let result = isNodeJs ? event.result : event.data.result;
+    let messages = isNodeJs ? event.messages : event.data.messages;
 
     // If the response is that cqlWorker is still waiting on the patient bundle, 
     // wait 100 ms and resend.
@@ -40,7 +41,7 @@ export function initializeCqlWorker(cqlWorker, isNodeJs=false) {
       // If the expression was found in the messageArray
       if (executingExpressionIndex != -1) {
         // Return the result by resolving the promise
-        messageArray[executingExpressionIndex].resolver(result);
+        messageArray[executingExpressionIndex].resolver({result, messages});
         // Remove the matching entry from the array
         messageArray.splice(executingExpressionIndex,1);
       }
