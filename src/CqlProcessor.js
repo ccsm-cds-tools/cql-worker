@@ -18,7 +18,8 @@ export default class CqlProcessor {
     elmJson,
     valueSetJson,
     parameters = null,
-    elmJsonDependencies = {}
+    elmJsonDependencies = {},
+    messageListener = undefined
   ) {
     this.patientSource = fhir.PatientSource.FHIRv401();
     this.repository = new cql.Repository({
@@ -27,10 +28,12 @@ export default class CqlProcessor {
     });
     this.library = new cql.Library(elmJson, this.repository);
     this.codeService = new cql.CodeService(valueSetJson);
+    this.messageListener = messageListener;
     this.executor = new cql.Executor(
       this.library,
       this.codeService,
-      parameters
+      parameters,
+      this.messageListener
     );
   }
 
@@ -59,7 +62,7 @@ export default class CqlProcessor {
       if (expr == "__evaluate_library__") {
         results = await this.executor.exec(this.patientSource);
         return results.patientResults[this.patientID];
-      } else {
+      } else {        
         results = await this.executor.exec_expression(
           expr,
           this.patientSource
