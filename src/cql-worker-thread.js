@@ -1,6 +1,8 @@
 import { parentPort } from "worker_threads";
 import CqlProcessor from "./CqlProcessor.js";
+import { MessageListener } from './messageListener.js'
 var processor = {};
+var messageListener = undefined;
 
 /**
  * TODO: Update this comment for node worker thread.
@@ -26,16 +28,21 @@ parentPort.onmessage = async function (rx) {
   // the type called most often.
   if ((expression = rx.data.expression) != null) {
     let tx, result;
+    let executionDateTime = rx.data.executionDateTime === null ? undefined : rx.data.executionDateTime;
     if (processor.patientSource._bundles.length > 0) {
       if (expression == "__evaluate_library__") {
-        result = await processor.evaluateLibrary();
+        result = await processor.evaluateLibrary(executionDateTime);
       } else {
-         result = await processor.evaluateExpression(expression);
+         result = await processor.evaluateExpression(expression, executionDateTime);
       }
       tx = {
         expression: expression,
         result: result,
       };
+      if(messageListener){
+        tx.messages = messageListener.messages;
+        messageListener.messages = [];
+      }      
     } else {
       // If we don't have a bundle just send the expression back.
       tx = {
@@ -56,11 +63,13 @@ parentPort.onmessage = async function (rx) {
     // CQL Processor object.
     parameters = rx.data.parameters;
     elmJsonDependencies = rx.data.elmJsonDependencies;
+    messageListener = new MessageListener();
     processor = new CqlProcessor(
       elmJson,
       valueSetJson,
       parameters,
-      elmJsonDependencies
+      elmJsonDependencies,
+      messageListener
     );
   }
 };
