@@ -53,6 +53,7 @@ export default class CqlProcessor {
    * Evaluate an expression from the CQL library represented by elmJson against
    * the patient bundle.
    * @param {string} expr - The name of an expression from elmJson
+   * @param {string} executionDateTime - Optional, ISO formatted execution datetime if not now
    * @returns {object} results - The results from executing the expression
    */
   async evaluateExpression(expr, executionDateTime = undefined) {
@@ -61,7 +62,7 @@ export default class CqlProcessor {
       let results;
       if (expr == "__evaluate_library__") {
         results = executionDateTime != undefined ? 
-          await this.executor.exec(this.patientSource, executionDateTime):
+          await this.executor.exec(this.patientSource, cql.DateTime.parse(executionDateTime)):
           await this.executor.exec(this.patientSource);
         return results.patientResults[this.patientID];
       } else {     
@@ -69,7 +70,7 @@ export default class CqlProcessor {
           await this.executor.exec_expression(
             expr,
             this.patientSource,
-            executionDateTime
+            cql.DateTime.parse(executionDateTime)
           ):
           await this.executor.exec_expression(
             expr,

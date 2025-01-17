@@ -71,7 +71,7 @@ export function initializeCqlWorker(cqlWorker, isNodeJs=false) {
   /**
    * Sends an expression to the webworker for evaluation.
    * @param {string} expression - The name of a CQL expression.
-   * @param {datetime} executionDateTime - Optional, execution date time if not now.
+   * @param {string} executionDateTime - Optional, ISO formatted execution datetime if not now
    * @returns {boolean} - A dummy return value.
    */
   const evaluateExpression = async function(expression, executionDateTime = undefined) {
