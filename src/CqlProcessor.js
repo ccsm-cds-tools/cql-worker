@@ -55,18 +55,26 @@ export default class CqlProcessor {
    * @param {string} expr - The name of an expression from elmJson
    * @returns {object} results - The results from executing the expression
    */
-  async evaluateExpression(expr) {
+  async evaluateExpression(expr, executionDateTime = undefined) {
     // Only try to evaluate an expression if we have a patient bundle loaded.
     if (this.patientSource._bundles && this.patientSource._bundles.length > 0) {
       let results;
       if (expr == "__evaluate_library__") {
-        results = await this.executor.exec(this.patientSource);
+        results = executionDateTime != undefined ? 
+          await this.executor.exec(this.patientSource, executionDateTime):
+          await this.executor.exec(this.patientSource);
         return results.patientResults[this.patientID];
-      } else {        
-        results = await this.executor.exec_expression(
-          expr,
-          this.patientSource
-        );
+      } else {     
+        results = executionDateTime != undefined ? 
+          await this.executor.exec_expression(
+            expr,
+            this.patientSource,
+            executionDateTime
+          ):
+          await this.executor.exec_expression(
+            expr,
+            this.patientSource
+          );
         this.patientSource._index = 0; // HACK: rewind the patient source
         return results.patientResults[this.patientID][expr];
       }
@@ -78,7 +86,7 @@ export default class CqlProcessor {
    * the patient bundle.
    * @returns {object} results - The results from executing the expression
    */
-  async evaluateLibrary() {
-    return this.evaluateExpression("__evaluate_library__");
+  async evaluateLibrary(executionDateTime = undefined) {
+    return this.evaluateExpression("__evaluate_library__", executionDateTime);
   }
 }

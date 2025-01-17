@@ -71,9 +71,10 @@ export function initializeCqlWorker(cqlWorker, isNodeJs=false) {
   /**
    * Sends an expression to the webworker for evaluation.
    * @param {string} expression - The name of a CQL expression.
+   * @param {datetime} executionDateTime - Optional, execution date time if not now.
    * @returns {boolean} - A dummy return value.
    */
-  const evaluateExpression = async function(expression) {
+  const evaluateExpression = async function(expression, executionDateTime = undefined) {
     // If this expression is already on the message stack, return its index.
     let executingExpressionIndex = messageArray.map((msg,idx) => {
       if (msg.expression == expression) return idx;
@@ -93,7 +94,7 @@ export function initializeCqlWorker(cqlWorker, isNodeJs=false) {
       });
       
       // Send the entry to the Web Worker
-      cqlWorker.postMessage({expression: expression});
+      cqlWorker.postMessage({expression: expression, executionDateTime: executionDateTime});
       // Return a promise that can be resolved after the web worker returns the result
       return new Promise(resolve => messageArray[n-1].resolver = resolve);
     } else {
@@ -105,8 +106,8 @@ export function initializeCqlWorker(cqlWorker, isNodeJs=false) {
    * Sends a command to the webworker for to evaluate the entire library.
    * @returns {boolean} - A dummy return value.
    */
-  const evaluateLibrary = async function() {
-    return evaluateExpression('__evaluate_library__');
+  const evaluateLibrary = async function(executionDateTime = undefined) {
+    return evaluateExpression('__evaluate_library__', executionDateTime);
   };
 
   return [

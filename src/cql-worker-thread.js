@@ -28,11 +28,12 @@ parentPort.onmessage = async function (rx) {
   // the type called most often.
   if ((expression = rx.data.expression) != null) {
     let tx, result;
+    let executionDateTime = rx.data.executionDateTime === null ? undefined : rx.data.executionDateTime;
     if (processor.patientSource._bundles.length > 0) {
       if (expression == "__evaluate_library__") {
-        result = await processor.evaluateLibrary();
+        result = await processor.evaluateLibrary(executionDateTime);
       } else {
-         result = await processor.evaluateExpression(expression);
+         result = await processor.evaluateExpression(expression, executionDateTime);
       }
       tx = {
         expression: expression,
