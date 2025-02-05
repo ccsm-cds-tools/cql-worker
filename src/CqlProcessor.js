@@ -18,7 +18,8 @@ export default class CqlProcessor {
     elmJson,
     valueSetJson,
     parameters = null,
-    elmJsonDependencies = {}
+    elmJsonDependencies = {},
+    messageListener = undefined
   ) {
     this.patientSource = fhir.PatientSource.FHIRv401();
     this.repository = new cql.Repository({
@@ -27,10 +28,12 @@ export default class CqlProcessor {
     });
     this.library = new cql.Library(elmJson, this.repository);
     this.codeService = new cql.CodeService(valueSetJson);
+    this.messageListener = messageListener;
     this.executor = new cql.Executor(
       this.library,
       this.codeService,
-      parameters
+      parameters,
+      this.messageListener
     );
   }
 
@@ -50,20 +53,29 @@ export default class CqlProcessor {
    * Evaluate an expression from the CQL library represented by elmJson against
    * the patient bundle.
    * @param {string} expr - The name of an expression from elmJson
+   * @param {string} executionDateTime - Optional, ISO formatted execution datetime if not now
    * @returns {object} results - The results from executing the expression
    */
-  async evaluateExpression(expr) {
+  async evaluateExpression(expr, executionDateTime = undefined) {
     // Only try to evaluate an expression if we have a patient bundle loaded.
     if (this.patientSource._bundles && this.patientSource._bundles.length > 0) {
       let results;
       if (expr == "__evaluate_library__") {
-        results = await this.executor.exec(this.patientSource);
+        results = executionDateTime != undefined ? 
+          await this.executor.exec(this.patientSource, cql.DateTime.parse(executionDateTime)):
+          await this.executor.exec(this.patientSource);
         return results.patientResults[this.patientID];
-      } else {
-        results = await this.executor.exec_expression(
-          expr,
-          this.patientSource
-        );
+      } else {     
+        results = executionDateTime != undefined ? 
+          await this.executor.exec_expression(
+            expr,
+            this.patientSource,
+            cql.DateTime.parse(executionDateTime)
+          ):
+          await this.executor.exec_expression(
+            expr,
+            this.patientSource
+          );
         this.patientSource._index = 0; // HACK: rewind the patient source
         return results.patientResults[this.patientID][expr];
       }
@@ -75,7 +87,7 @@ export default class CqlProcessor {
    * the patient bundle.
    * @returns {object} results - The results from executing the expression
    */
-  async evaluateLibrary() {
-    return this.evaluateExpression("__evaluate_library__");
+  async evaluateLibrary(executionDateTime = undefined) {
+    return this.evaluateExpression("__evaluate_library__", executionDateTime);
   }
 }
